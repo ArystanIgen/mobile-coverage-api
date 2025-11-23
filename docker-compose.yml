@@ -1,0 +1,36 @@
+services:
+
+  fastapi:
+    container_name: mobile-coverage-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENVIRONMENT: dev
+    volumes:
+      - ./src:/src:rw
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    ports:
+      - 8034:8000
+
+
+  postgres:
+    container_name: mobile-coverage-db
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 6446:5432
+
+
+
+volumes:
+  postgres_data:
