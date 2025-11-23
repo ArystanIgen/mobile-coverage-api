@@ -1,7 +1,7 @@
 [project]
 name = "mobile-coverage-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "API that tells you which mobile networks (2G/3G/4G) are available at a given address in France."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -12,6 +12,7 @@ dependencies = [
     "httpx>=0.28.1",
     "loguru>=0.7.3",
     "psycopg2-binary>=2.9.11",
+    "pyproj>=3.7.2",
     "python-multipart>=0.0.20",
     "respx>=0.22.0",
     "sqlalchemy>=2.0.44",
@@ -22,6 +23,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "bandit>=1.8.3",
+    "ipython>=9.7.0",
     "mypy>=1.15.0",
     "mypy-protobuf>=3.6.0",
     "pytest>=8.3.5",

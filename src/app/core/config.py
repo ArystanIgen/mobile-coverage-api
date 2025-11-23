@@ -39,6 +39,7 @@ class AppConfig:
             )
 
     env = environ.var()
+    adresse_api_url = environ.var()
 
     api: API = environ.group(API)
     db: DB = environ.group(DB)
