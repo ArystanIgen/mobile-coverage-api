@@ -10,6 +10,7 @@ dependencies = [
     "environ-config>=24.1.0",
     "fastapi>=0.121.3",
     "httpx>=0.28.1",
+    "loguru>=0.7.3",
     "psycopg2-binary>=2.9.11",
     "python-multipart>=0.0.20",
     "respx>=0.22.0",
