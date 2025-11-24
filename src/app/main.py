@@ -3,13 +3,12 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI
 from loguru import logger
+from starlette.middleware.cors import CORSMiddleware
 
-from app.core.config import CONFIG
-from app.services.data_ingestion import seed_providers_and_sites
 from app.api.v1.api import api_router
 from app.api.v1.endpoints.health import router as health_router
-
-from starlette.middleware.cors import CORSMiddleware
+from app.core.config import CONFIG
+from app.services.data_ingestion import seed_providers_and_sites
 
 
 @asynccontextmanager

@@ -1,5 +1,8 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints.network_coverage import router as network_coverage_router
+
+from app.api.v1.endpoints.network_coverage import (
+    router as network_coverage_router,
+)
 
 api_router = APIRouter()
 

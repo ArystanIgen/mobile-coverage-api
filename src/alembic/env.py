@@ -37,8 +37,10 @@ def include_object(obj, name, type_, reflected, compare_to):
 
 def get_url():
     return (
-        f"postgresql+asyncpg://{os.getenv('DB_USERNAME', 'postgres')}:{os.getenv('DB_PASSWORD', 'postgres')}"
-        f"@{os.getenv('DB_HOST', 'postgres')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'postgres')}"
+        f"postgresql+asyncpg://{os.getenv('DB_USERNAME', 'postgres')}:"
+        f"{os.getenv('DB_PASSWORD', 'postgres')}"
+        f"@{os.getenv('DB_HOST', 'postgres')}:"
+        f"{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'postgres')}"
     )
 
 

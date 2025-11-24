@@ -3,12 +3,12 @@ import csv
 import pyproj
 from loguru import logger
 
+from app.core.config import CONFIG
 from app.db.session import async_session_factory
 from app.models import ProviderModel
 from app.repository import ProviderRepository, SiteRepository
 from app.schemas.provider import ProviderCreate
 from app.schemas.site import SiteCreate
-from app.core.config import CONFIG
 
 OPERATOR_MAPPING = {
     "20801": "orange",

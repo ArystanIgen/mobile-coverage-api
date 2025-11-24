@@ -1,12 +1,10 @@
-from app.db.session import async_session_factory
-
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from fastapi import Depends
-
 from typing import Annotated, AsyncGenerator
 
+from fastapi import Depends
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.session import async_session_factory
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
@@ -18,6 +16,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
                 "Session rollback because of exception: {}", e
             )
             await session.rollback()
+            raise
         finally:
             await session.close()
 
