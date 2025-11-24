@@ -36,13 +36,22 @@ case "$ENV" in
 "DEV")
     wait_for_db
     alembic_migration
-    uvicorn app.main:main_app --reload --host 0.0.0.0 --port 8000 --no-access-log
+    uvicorn app.main:main_app \
+        --reload \
+        --host "${UVICORN_HOST:-0.0.0.0}" \
+        --port "${UVICORN_PORT:-8000}" \
+        --no-access-log
     ;;
 
 "PRODUCTION")
     wait_for_db
     alembic_migration
-    uvicorn app.main:main_app --host 0.0.0.0 --port 8000 --proxy-headers --workers 5 --no-access-log
+    uvicorn app.main:main_app \
+        --host "${UVICORN_HOST:-0.0.0.0}" \
+        --port "${UVICORN_PORT:-8000}" \
+        --proxy-headers \
+        --workers "${UVICORN_WORKERS:-2}" \
+        --no-access-log
     ;;
 *)
     echo "NO ENV SPECIFIED!"

@@ -1,5 +1,6 @@
 import httpx
 from fastapi import HTTPException
+
 from app.core.config import CONFIG
 from app.schemas.address import GeoCoordinates
 

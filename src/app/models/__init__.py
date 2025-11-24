@@ -1,5 +1,5 @@
-from app.models.site import SiteModel
 from app.models.provider import ProviderModel
+from app.models.site import SiteModel
 
 __all__ = [
     "SiteModel",
