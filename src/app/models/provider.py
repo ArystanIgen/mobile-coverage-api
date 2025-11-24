@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from app.db.base import BaseModel
+from app.models.base import BaseModel
 
 
 class ProviderModel(BaseModel):

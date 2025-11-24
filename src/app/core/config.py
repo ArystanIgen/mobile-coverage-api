@@ -40,6 +40,9 @@ class AppConfig:
 
     env = environ.var()
     adresse_api_url = environ.var()
+    sites_csv_file_path = (
+        "data/2018_01_Sites_mobiles_2G_3G_4G_France_metropolitaine_L93.csv"
+    )
 
     api: API = environ.group(API)
     db: DB = environ.group(DB)

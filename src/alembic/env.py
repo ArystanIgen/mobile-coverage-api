@@ -24,7 +24,6 @@ sys.path = ["", ".."] + sys.path[1:]
 
 # App Imports
 from app.models import *  # noqa
-from app.db.base import BaseModel
 
 target_metadata = [BaseModel.metadata]
 

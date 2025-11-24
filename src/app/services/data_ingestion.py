@@ -8,6 +8,7 @@ from app.models import ProviderModel
 from app.repository import ProviderRepository, SiteRepository
 from app.schemas.provider import ProviderCreate
 from app.schemas.site import SiteCreate
+from app.core.config import CONFIG
 
 OPERATOR_MAPPING = {
     "20801": "orange",
@@ -23,10 +24,6 @@ def parse_float(value: str) -> float | None:
     except (TypeError, ValueError):
         return None
 
-
-CSV_FILE_PATH = (
-    "data/2018_01_Sites_mobiles_2G_3G_4G_France_metropolitaine_L93.csv"
-)
 
 provider_repo = ProviderRepository()
 site_repo = SiteRepository()
@@ -68,7 +65,7 @@ async def seed_providers_if_missing() -> bool:
 
 async def seed_sites_from_csv():
     async with async_session_factory() as async_session:
-        logger.info(f"Reading CSV from {CSV_FILE_PATH}...")
+        logger.info(f"Reading CSV from {CONFIG.sites_csv_file_path}...")
         sites_batch = []
         processed_count = 0
         batch_size = 5000
@@ -82,7 +79,7 @@ async def seed_sites_from_csv():
             for provider in fetched_providers
         }
 
-        with open(CSV_FILE_PATH, mode="r", encoding="utf-8") as f:
+        with open(CONFIG.sites_csv_file_path, mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f, delimiter=";")
 
             for row in reader:
