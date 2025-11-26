@@ -63,9 +63,12 @@ async def seed_providers_if_missing() -> bool:
         return True
 
 
-async def seed_sites_from_csv():
+async def seed_sites_from_csv(
+    csv_file_path: str | None = None,
+) -> None:
+    target_csv = csv_file_path or CONFIG.sites_csv_file_path
     async with async_session_factory() as async_session:
-        logger.info(f"Reading CSV from {CONFIG.sites_csv_file_path}...")
+        logger.info(f"Reading CSV from {target_csv}...")
         sites_batch = []
         processed_count = 0
         batch_size = 5000
@@ -79,7 +82,7 @@ async def seed_sites_from_csv():
             for provider in fetched_providers
         }
 
-        with open(CONFIG.sites_csv_file_path, mode="r", encoding="utf-8") as f:
+        with open(target_csv, mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f, delimiter=";")
 
             for row in reader:
