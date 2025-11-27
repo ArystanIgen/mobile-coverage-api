@@ -20,15 +20,12 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-sys.path = ['', '..'] + sys.path[1:]
+sys.path = ["", ".."] + sys.path[1:]
 
 # App Imports
 from app.models import *  # noqa
-from app.db.base import BaseModel
 
-target_metadata = [
-    BaseModel.metadata
-]
+target_metadata = [BaseModel.metadata]
 
 
 def include_object(obj, name, type_, reflected, compare_to):
@@ -39,8 +36,12 @@ def include_object(obj, name, type_, reflected, compare_to):
 
 
 def get_url():
-    return f'postgresql+asyncpg://{os.getenv("DB_USERNAME", "postgres")}:{os.getenv("DB_PASSWORD", "postgres")}' \
-           f'@{os.getenv("DB_HOST", "postgres")}:{os.getenv("DB_PORT", "5432")}/{os.getenv("DB_NAME", "postgres")}'
+    return (
+        f"postgresql+asyncpg://{os.getenv('DB_USERNAME', 'postgres')}:"
+        f"{os.getenv('DB_PASSWORD', 'postgres')}"
+        f"@{os.getenv('DB_HOST', 'postgres')}:"
+        f"{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'postgres')}"
+    )
 
 
 def run_migrations_offline():
@@ -61,7 +62,6 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         compare_type=True,
-
     )
 
     with context.begin_transaction():
@@ -70,7 +70,9 @@ def run_migrations_offline():
 
 def do_run_migrations(connection):
     context.configure(
-        connection=connection, target_metadata=target_metadata, compare_type=True
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_type=True,
     )
 
     with context.begin_transaction():
@@ -79,14 +81,14 @@ def do_run_migrations(connection):
 
 async def run_migrations_online():
     """Run migrations in 'online' mode.
-exit    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    exit    In this scenario we need to create an Engine
+        and associate a connection with the context.
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration['sqlalchemy.url'] = get_url()
+    configuration["sqlalchemy.url"] = get_url()
     connectable = async_engine_from_config(
-        configuration, prefix='sqlalchemy.', poolclass=pool.NullPool
+        configuration, prefix="sqlalchemy.", poolclass=pool.NullPool
     )
 
     async with connectable.connect() as connection:
