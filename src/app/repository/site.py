@@ -31,4 +31,4 @@ class SiteRepository(BaseRepository[SiteModel, SiteCreate, SiteUpdate]):
         )
 
         query = await async_session.execute(stmt)
-        return query.scalars().all()
+        return list(query.scalars().all())

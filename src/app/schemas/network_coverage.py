@@ -1,4 +1,3 @@
-from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,6 +10,4 @@ class NetworkAvailability(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-OperatorName = Literal['orange', 'sfr', 'free', 'bouygues']
-
-OperatorsAvailability = dict[OperatorName, NetworkAvailability]
+OperatorsAvailability = dict[str, NetworkAvailability]

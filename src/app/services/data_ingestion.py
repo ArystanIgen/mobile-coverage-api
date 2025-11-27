@@ -2,6 +2,7 @@ import csv
 
 import pyproj
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import CONFIG
 from app.db.session import async_session_factory
@@ -28,7 +29,7 @@ def parse_float(value: str) -> float | None:
 provider_repo = ProviderRepository()
 site_repo = SiteRepository()
 
-TRANSFORMER = transformer = pyproj.Transformer.from_crs(
+TRANSFORMER = pyproj.Transformer.from_crs(
     "+proj=lcc "
     "+lat_1=49 "
     "+lat_2=44 "
@@ -45,89 +46,99 @@ TRANSFORMER = transformer = pyproj.Transformer.from_crs(
 )
 
 
-async def seed_providers_if_missing() -> bool:
-    async with async_session_factory() as session:
-        existing = await provider_repo.get_multi(async_session=session)
+async def create_providers_if_not_exist(
+    async_session: AsyncSession,
+) -> bool:
+    existing_providers = await provider_repo.get_multi(
+        async_session=async_session,
+    )
 
-        if existing:
-            return False
+    if existing_providers:
+        return False
 
-        for mobile_network_code, name in OPERATOR_MAPPING.items():
-            await provider_repo.create(
-                async_session=session,
-                obj_in=ProviderCreate(
-                    mobile_network_code=mobile_network_code, name=name
-                ),
-            )
+    for mobile_network_code, name in OPERATOR_MAPPING.items():
+        await provider_repo.create(
+            async_session=async_session,
+            obj_in=ProviderCreate(
+                mobile_network_code=mobile_network_code,
+                name=name,
+            ),
+        )
 
-        return True
+    return True
 
 
 async def seed_sites_from_csv(
+    async_session: AsyncSession,
     csv_file_path: str | None = None,
 ) -> None:
     target_csv = csv_file_path or CONFIG.sites_csv_file_path
-    async with async_session_factory() as async_session:
-        logger.info(f"Reading CSV from {target_csv}...")
-        sites_batch = []
-        processed_count = 0
-        batch_size = 5000
+    logger.info(f"Reading CSV from {target_csv}...")
+    sites_batch = []
+    processed_count = 0
+    batch_size = 5000
 
-        fetched_providers: list[ProviderModel] = await provider_repo.get_multi(
-            async_session=async_session,
-        )
+    fetched_providers: list[ProviderModel] = await provider_repo.get_multi(
+        async_session=async_session,
+    )
 
-        provider_map = {
-            provider.mobile_network_code: provider.id
-            for provider in fetched_providers
-        }
+    provider_map = {
+        provider.mobile_network_code: provider.id
+        for provider in fetched_providers
+    }
 
-        with open(target_csv, mode="r", encoding="utf-8") as f:
-            reader = csv.DictReader(f, delimiter=";")
+    with open(target_csv, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f, delimiter=";")
 
-            for row in reader:
-                mobile_network_code = row["Operateur"]
-                parsed_x = parse_float(row.get("x"))
-                parsed_y = parse_float(row.get("y"))
+        for row in reader:
+            mobile_network_code = row["Operateur"]
+            parsed_x = parse_float(row.get("x"))
+            parsed_y = parse_float(row.get("y"))
 
-                provider_id = provider_map.get(mobile_network_code)
-                if provider_id and parsed_x and parsed_y:
-                    longitude, latitude = transformer.transform(
-                        parsed_x, parsed_y
-                    )
-                    sites_batch.append(
-                        SiteCreate(
-                            provider_id=provider_id,
-                            latitude=latitude,
-                            longitude=longitude,
-                            has_2g=row["2G"] == "1",
-                            has_3g=row["3G"] == "1",
-                            has_4g=row["4G"] == "1",
-                        )
-                    )
-                    if len(sites_batch) >= batch_size:
-                        await site_repo.create_bulk(
-                            async_session=async_session,
-                            objs_in=sites_batch,
-                        )
-                        processed_count += len(sites_batch)
-                        sites_batch = []
-                        logger.info(f"Processed {processed_count} sites...")
-            if sites_batch:
-                await site_repo.create_bulk(
-                    async_session=async_session,
-                    objs_in=sites_batch,
+            provider_id = provider_map.get(mobile_network_code)
+            if provider_id and parsed_x and parsed_y:
+                longitude, latitude = TRANSFORMER.transform(
+                    parsed_x, parsed_y
                 )
-                processed_count += len(sites_batch)
-            logger.info(f"Done! Added total of {processed_count} Sites.")
+                sites_batch.append(
+                    SiteCreate(
+                        provider_id=provider_id,
+                        latitude=latitude,
+                        longitude=longitude,
+                        has_2g=row["2G"] == "1",
+                        has_3g=row["3G"] == "1",
+                        has_4g=row["4G"] == "1",
+                    )
+                )
+                if len(sites_batch) >= batch_size:
+                    await site_repo.create_bulk(
+                        async_session=async_session,
+                        objs_in=sites_batch,
+                    )
+                    processed_count += len(sites_batch)
+                    sites_batch = []
+        if sites_batch:
+            await site_repo.create_bulk(
+                async_session=async_session,
+                objs_in=sites_batch,
+            )
+            processed_count += len(sites_batch)
+        logger.info(f"Done! Added total of {processed_count} Sites.")
 
 
 async def seed_providers_and_sites() -> None:
-    providers_seeded = await seed_providers_if_missing()
+    async with async_session_factory() as async_session:
+        providers_created_now = await create_providers_if_not_exist(
+            async_session=async_session,
+        )
 
-    if not providers_seeded:
-        logger.info("Skipping site seeding because providers already exist.")
-        return
+        if not providers_created_now:
+            logger.info(
+                "Providers already exist. Skipping site seeding."
+            )
+            return
 
-    logger.info("Providers seeded. Proceeding to seed sites...")
-    await seed_sites_from_csv()
+        logger.info(
+            "Providers created. Proceeding to seed sites..."
+        )
+        await seed_sites_from_csv(async_session=async_session)

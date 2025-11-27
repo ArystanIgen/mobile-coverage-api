@@ -1,3 +1,5 @@
+from typing import Any, Awaitable, cast
+
 import factory
 from factory.alchemy import SQLAlchemyModelFactory
 
@@ -5,11 +7,10 @@ from app.models import ProviderModel, SiteModel
 
 
 class AsyncSessionFactory(SQLAlchemyModelFactory):
-
     @classmethod
     async def _create(cls, model_class, *args, **kwargs):
         instance = super()._create(model_class, *args, **kwargs)
-        async with cls._meta.sqlalchemy_session as session:
+        async with cls._meta.sqlalchemy_session as session:  # type: ignore[attr-defined]
             await session.commit()
         return instance
 
@@ -34,3 +35,11 @@ class SiteFactory(AsyncSessionFactory):
     has_2g = factory.Faker("pybool")
     has_3g = factory.Faker("pybool")
     has_4g = factory.Faker("pybool")
+
+
+async def create_provider_factory(**kwargs: Any) -> ProviderModel:
+    return await cast(Awaitable[ProviderModel], ProviderFactory(**kwargs))
+
+
+async def create_site_factory(**kwargs: Any) -> SiteModel:
+    return await cast(Awaitable[SiteModel], SiteFactory(**kwargs))

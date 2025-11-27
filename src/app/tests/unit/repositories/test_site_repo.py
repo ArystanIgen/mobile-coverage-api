@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -5,15 +7,15 @@ from app.models import SiteModel
 from app.repository import SiteRepository
 from app.schemas.address import GeoCoordinates
 from app.schemas.site import SiteCreate
-from app.tests.factories import ProviderFactory, SiteFactory
+from app.tests.factories import create_provider_factory, create_site_factory
 
 
 @pytest.mark.asyncio
 async def test_create_site_model(
     async_session: AsyncSession,
-    mock_site_data: dict[str, str]
+    mock_site_data: dict[str, Any],
 ):
-    created_provider = await ProviderFactory()
+    created_provider = await create_provider_factory()
 
     site_repo = SiteRepository()
 
@@ -36,11 +38,11 @@ async def test_create_site_model(
 @pytest.mark.asyncio
 async def test_return_nearby_sites_by_specified_longitude_and_latitude(
     async_session: AsyncSession,
-    mock_list_of_nearby_geo_coordinates: list[GeoCoordinates]
+    mock_list_of_nearby_geo_coordinates: list[GeoCoordinates],
 ):
     for coordinates in mock_list_of_nearby_geo_coordinates:
-        test_provider = await ProviderFactory()
-        await SiteFactory(
+        test_provider = await create_provider_factory()
+        await create_site_factory(
             provider=test_provider,
             longitude=coordinates.longitude,
             latitude=coordinates.latitude,
@@ -55,5 +57,11 @@ async def test_return_nearby_sites_by_specified_longitude_and_latitude(
     )
 
     assert len(nearby_sites) == 1
-    assert nearby_sites[0].longitude == mock_list_of_nearby_geo_coordinates[0].longitude
-    assert nearby_sites[0].latitude == mock_list_of_nearby_geo_coordinates[0].latitude
+    assert (
+        nearby_sites[0].longitude
+        == mock_list_of_nearby_geo_coordinates[0].longitude
+    )
+    assert (
+        nearby_sites[0].latitude
+        == mock_list_of_nearby_geo_coordinates[0].latitude
+    )

@@ -12,9 +12,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
         except Exception as e:
-            logger.exception(
-                "Session rollback because of exception: {}", e
-            )
+            logger.exception("Session rollback because of exception: {}", e)
             await session.rollback()
             raise
         finally:

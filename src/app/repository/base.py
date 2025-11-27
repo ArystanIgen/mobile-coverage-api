@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Generic, Optional, Type, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel
@@ -22,7 +22,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def get_multi(
         self, async_session: AsyncSession, *, skip: int = 0, limit: int = 100
-    ) -> List[ModelType]:
+    ) -> list[ModelType]:
         stmt = (
             select(self.model)
             .order_by(self.model.id)
@@ -30,7 +30,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .limit(limit)
         )
         query = await async_session.execute(stmt)
-        return query.scalars().all()
+        return list(query.scalars().all())
 
     async def create(
         self, async_session: AsyncSession, *, obj_in: CreateSchemaType
@@ -48,8 +48,8 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             raise
 
     async def create_bulk(
-        self, async_session: AsyncSession, *, objs_in: List[CreateSchemaType]
-    ) -> List[ModelType]:
+        self, async_session: AsyncSession, *, objs_in: list[CreateSchemaType]
+    ) -> list[ModelType]:
         try:
             objs_data = [
                 obj.model_dump(mode="python", exclude_none=True)

@@ -13,7 +13,6 @@ wait_for () {
 }
 
 alembic_migration() {
-  # alembic revision --autogenerate -m ""
   alembic -x data=true upgrade head
 }
 

@@ -1,3 +1,5 @@
+from typing import Any, Never
+
 import pytest
 import respx
 from fastapi import HTTPException
@@ -9,7 +11,8 @@ from app.services.adresse_api import fetch_coordinates_from_address
 
 @pytest.mark.asyncio
 async def test_fetch_coordinates_success(
-    mock_adresse_api_response: dict
+    mock_adresse_api_response: dict[str, Any],
+    mock_address: str,
 ):
     async with respx.mock:
         respx.get(CONFIG.adresse_api_url).mock(
@@ -19,7 +22,7 @@ async def test_fetch_coordinates_success(
             )
         )
 
-        coordinates = await fetch_coordinates_from_address("Paris")
+        coordinates = await fetch_coordinates_from_address(mock_address)
 
         expected_longitude, expected_latitude = mock_adresse_api_response[
             "features"
@@ -31,7 +34,7 @@ async def test_fetch_coordinates_success(
 
 @pytest.mark.asyncio
 async def test_fetch_coordinates_not_found():
-    mock_response_data = {"features": []}
+    mock_response_data: dict[str, list[Never]] = {"features": []}
 
     async with respx.mock:
         respx.get(CONFIG.adresse_api_url).mock(
