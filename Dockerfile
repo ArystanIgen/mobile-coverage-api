@@ -36,14 +36,11 @@ ENV PATH="/.venv/bin:$PATH" \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libpq-dev \
-        gettext \
-        ffmpeg \
-        libgdal-dev \
-        curl \
-    && rm -rf /var/lib/apt/lists/* \
+       ca-certificates \
+       tzdata \
     && ln -fs /usr/share/zoneinfo/Europe/Madrid /etc/localtime \
-    && echo "Europe/Madrid" > /etc/timezone
+    && echo "Europe/Madrid" > /etc/timezone \
+    && rm -rf /var/lib/apt/lists/*
 
 USER app
 WORKDIR /src
