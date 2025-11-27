@@ -18,17 +18,6 @@ OPERATOR_MAPPING = {
     "20820": "bouygues",
 }
 
-
-def parse_float(value: str) -> float | None:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-provider_repo = ProviderRepository()
-site_repo = SiteRepository()
-
 TRANSFORMER = pyproj.Transformer.from_crs(
     "+proj=lcc "
     "+lat_1=49 "
@@ -44,6 +33,16 @@ TRANSFORMER = pyproj.Transformer.from_crs(
     "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
     always_xy=True,
 )
+
+provider_repo = ProviderRepository()
+site_repo = SiteRepository()
+
+
+def parse_float(value: str) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 async def create_providers_if_not_exist(
