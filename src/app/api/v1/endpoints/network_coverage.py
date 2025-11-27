@@ -5,7 +5,7 @@ from app.api.deps.session import (
     AsyncSessionDep,
 )
 from app.models import SiteModel
-from app.schemas.address import GeoCoordinates
+from app.schemas.geo_coordinates import GeoPoint
 from app.schemas.network_coverage import (
     NetworkAvailability,
     OperatorsAvailability,
@@ -34,7 +34,7 @@ async def get_network_coverage_api(
         description="Textual address, e.g. '42 rue papernest 75011 Paris'",
     ),
 ) -> OperatorsAvailability:
-    geo_coordinates: GeoCoordinates = await fetch_coordinates_from_address(
+    geo_coordinates: GeoPoint = await fetch_coordinates_from_address(
         address=address,
     )
 

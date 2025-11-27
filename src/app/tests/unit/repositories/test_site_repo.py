@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import SiteModel
 from app.repository import SiteRepository
-from app.schemas.address import GeoCoordinates
+from app.schemas.geo_coordinates import GeoPoint
 from app.schemas.site import SiteCreate
 from app.tests.factories import create_provider_factory, create_site_factory
 
@@ -38,7 +38,7 @@ async def test_create_site_model(
 @pytest.mark.asyncio
 async def test_return_nearby_sites_by_specified_longitude_and_latitude(
     async_session: AsyncSession,
-    mock_list_of_nearby_geo_coordinates: list[GeoCoordinates],
+    mock_list_of_nearby_geo_coordinates: list[GeoPoint],
 ):
     for coordinates in mock_list_of_nearby_geo_coordinates:
         test_provider = await create_provider_factory()

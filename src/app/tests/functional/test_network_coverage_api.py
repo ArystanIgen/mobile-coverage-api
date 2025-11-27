@@ -6,7 +6,7 @@ from httpx import AsyncClient, Response
 
 from app.core.config import CONFIG
 from app.models import ProviderModel
-from app.schemas.address import GeoCoordinates
+from app.schemas.geo_coordinates import GeoPoint
 from app.tests.factories import create_provider_factory, create_site_factory
 
 
@@ -16,7 +16,7 @@ async def test_get_network_coverage_api_returns_availability_map(
     mock_address: str,
     mock_adresse_api_response: dict[str, Any],
 ):
-    target_coordinates = GeoCoordinates(latitude=48.8566, longitude=2.3522)
+    target_coordinates = GeoPoint(latitude=48.8566, longitude=2.3522)
 
     orange_provider: ProviderModel = await create_provider_factory(
         name="orange",

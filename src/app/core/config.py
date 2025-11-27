@@ -40,12 +40,19 @@ class AppConfig:
 
     env = environ.var()
     adresse_api_url = environ.var()
-    sites_csv_file_path = (
-        "data/2018_01_Sites_mobiles_2G_3G_4G_France_metropolitaine_L93.csv"
-    )
 
     api: API = environ.group(API)
     db: DB = environ.group(DB)
+
+    sites_csv_file_path = (
+        "data/2018_01_Sites_mobiles_2G_3G_4G_France_metropolitaine_L93.csv"
+    )
+    logger_custom_formatter = (
+        "<green>{level}</green>: "
+        "<yellow>{time:YYYY-MM-DD at HH:mm:ss}</yellow> | "
+        "<level>{message}</level> | "
+        "<cyan>Request ID: {extra[request_id]}</cyan>"
+    )
 
 
 CONFIG: AppConfig = AppConfig.from_environ()  # type: ignore

@@ -2,6 +2,7 @@ services:
 
   fastapi:
     container_name: mobile-coverage-api
+    image: mobile-coverage-api:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,7 +15,15 @@ services:
     depends_on:
       - postgres
     ports:
-      - 8034:8000
+      - "${UVICORN_PORT}:${UVICORN_PORT}"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${UVICORN_PORT}${API_PREFIX}/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 
 
   postgres:

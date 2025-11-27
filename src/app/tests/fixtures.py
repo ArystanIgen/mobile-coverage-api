@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from app.schemas.address import GeoCoordinates
+from app.schemas.geo_coordinates import GeoPoint
 
 
 @pytest.fixture
@@ -24,10 +24,10 @@ def mock_site_data() -> dict[str, Any]:
 
 
 @pytest.fixture
-def mock_list_of_nearby_geo_coordinates() -> list[GeoCoordinates]:
+def mock_list_of_nearby_geo_coordinates() -> list[GeoPoint]:
     return [
-        GeoCoordinates(latitude=48.8566, longitude=2.3522),
-        GeoCoordinates(latitude=48.8567, longitude=2.3523),
+        GeoPoint(latitude=48.8566, longitude=2.3522),
+        GeoPoint(latitude=48.8567, longitude=2.3523),
     ]
 
 

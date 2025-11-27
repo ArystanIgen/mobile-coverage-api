@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class GeoCoordinates(BaseModel):
+class GeoPoint(BaseModel):
     latitude: float = Field(
         ...,
         ge=-90.0,
