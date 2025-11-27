@@ -48,7 +48,7 @@ RUN apt-get update \
 USER app
 WORKDIR /src
 COPY --from=builder --chown=app:app /src/entrypoint.sh /entrypoint.sh
-
+COPY pyproject.toml /pyproject.toml
 
 RUN chmod +x '/entrypoint.sh'
 

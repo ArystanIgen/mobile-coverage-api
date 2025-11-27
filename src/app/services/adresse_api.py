@@ -1,3 +1,5 @@
+from typing import Mapping
+
 import httpx
 from fastapi import HTTPException
 
@@ -6,7 +8,7 @@ from app.schemas.address import GeoCoordinates
 
 
 async def fetch_coordinates_from_address(address: str) -> GeoCoordinates:
-    params = {"q": address, "limit": 1}
+    params: Mapping[str, str | int] = {"q": address, "limit": 1}
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             url=CONFIG.adresse_api_url,

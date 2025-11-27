@@ -31,7 +31,7 @@ async def get_network_coverage_api(
         ...,
         min_length=3,
         max_length=200,
-        description="Textual address, e.g. '42 rue papernest 75011 Paris'"
+        description="Textual address, e.g. '42 rue papernest 75011 Paris'",
     ),
 ) -> OperatorsAvailability:
     geo_coordinates: GeoCoordinates = await fetch_coordinates_from_address(
@@ -53,6 +53,9 @@ async def get_network_coverage_api(
 
     for site in fetched_nearby_sites:
         provider_name = site.provider.name
+
+        if provider_name not in network_coverages:
+            continue
 
         coverage = network_coverages[provider_name]
 
