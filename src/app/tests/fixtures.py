@@ -27,7 +27,7 @@ def mock_site_data() -> dict[str, Any]:
 def mock_list_of_nearby_geo_coordinates() -> list[GeoPoint]:
     return [
         GeoPoint(latitude=48.8566, longitude=2.3522),
-        GeoPoint(latitude=48.8666, longitude=2.3522),
+        GeoPoint(latitude=49.0566, longitude=2.3522),
     ]
 
 
@@ -45,7 +45,7 @@ def mock_adresse_api_response() -> dict[str, Any]:
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [2.380383, 48.860248],
+                    "coordinates": [2.3522, 48.8566],
                 },
             }
         ],

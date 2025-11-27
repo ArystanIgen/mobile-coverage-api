@@ -40,6 +40,7 @@ class AppConfig:
 
     env = environ.var()
     adresse_api_url = environ.var()
+    search_radius_meters = environ.var(converter=int, default=1000)
 
     api: API = environ.group(API)
     db: DB = environ.group(DB)

@@ -1,11 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func
 
-from app.models import SiteModel
+from app.core.config import CONFIG
+from app.models import ProviderModel, SiteModel
 from app.repository.base import BaseRepository
-from app.schemas.site import SiteCreate, SiteUpdate
+from app.schemas.site import SiteCoverageRow, SiteCreate, SiteUpdate
 
 
 class SiteRepository(BaseRepository[SiteModel, SiteCreate, SiteUpdate]):
@@ -17,27 +17,36 @@ class SiteRepository(BaseRepository[SiteModel, SiteCreate, SiteUpdate]):
         *,
         longitude: float,
         latitude: float,
-        radius_m: int = 1000,
-    ) -> list[SiteModel]:
-        # Build a PostGIS point from lat/lon (WGS84)
+    ) -> list[SiteCoverageRow]:
+        # PostGIS point from lat/lon (WGS84)
         postgis_point = func.ST_SetSRID(
             func.ST_MakePoint(longitude, latitude), 4326
         )
 
-        stmt = (
-            select(self.model)
-            .options(joinedload(self.model.provider))
-            # checks whether
-            # two geometries are within a certain distance of each other
-            # (in this case, it is 1000 m)
-            .where(
-                func.ST_DWithin(
-                    self.model.location,
-                    postgis_point,
-                    radius_m,
-                )
-            )
+        is_within_radius = func.ST_DWithin(
+            self.model.location,
+            postgis_point,
+            CONFIG.search_radius_meters,
         )
 
-        query = await async_session.execute(stmt)
-        return list(query.scalars().all())
+        stmt = (
+            select(
+                ProviderModel.name.label("provider"),
+                func.bool_or(self.model.has_2g).label("g2"),
+                func.bool_or(self.model.has_3g).label("g3"),
+                func.bool_or(self.model.has_4g).label("g4"),
+            )
+            .select_from(self.model)
+            .join(
+                ProviderModel,
+                ProviderModel.id == self.model.provider_id,
+            )
+            .where(is_within_radius)
+            .group_by(ProviderModel.name)
+        )
+
+        result = await async_session.execute(stmt)
+        return [
+            SiteCoverageRow(row.provider, row.g2, row.g3, row.g4)
+            for row in result
+        ]

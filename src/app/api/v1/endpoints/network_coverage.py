@@ -4,12 +4,12 @@ from app.api.deps.repos import SiteRepoDep
 from app.api.deps.session import (
     AsyncSessionDep,
 )
-from app.models import SiteModel
 from app.schemas.geo_coordinates import GeoPoint
 from app.schemas.network_coverage import (
     NetworkAvailability,
     OperatorsAvailability,
 )
+from app.schemas.site import SiteCoverageRow
 from app.services.adresse_api import fetch_coordinates_from_address
 
 router = APIRouter()
@@ -38,29 +38,21 @@ async def get_network_coverage_api(
         address=address,
     )
 
-    fetched_nearby_sites: list[SiteModel] = await site_repo.get_nearby_sites(
+    fetched_nearby_sites: list[
+        SiteCoverageRow
+    ] = await site_repo.get_nearby_sites(
         async_session=async_session,
         longitude=geo_coordinates.longitude,
         latitude=geo_coordinates.latitude,
     )
 
-    network_coverages: OperatorsAvailability = {
-        "orange": NetworkAvailability(g2=False, g3=False, g4=False),
-        "sfr": NetworkAvailability(g2=False, g3=False, g4=False),
-        "free": NetworkAvailability(g2=False, g3=False, g4=False),
-        "bouygues": NetworkAvailability(g2=False, g3=False, g4=False),
-    }
+    network_coverages: OperatorsAvailability = {}
 
-    for site in fetched_nearby_sites:
-        provider_name = site.provider.name
-
-        if provider_name not in network_coverages:
-            continue
-
-        coverage = network_coverages[provider_name]
-
-        coverage.g2 = coverage.g2 or site.has_2g
-        coverage.g3 = coverage.g3 or site.has_3g
-        coverage.g4 = coverage.g4 or site.has_4g
+    for site_coverage in fetched_nearby_sites:
+        network_coverages[site_coverage.provider] = NetworkAvailability(
+            g2=site_coverage.g2,
+            g3=site_coverage.g3,
+            g4=site_coverage.g4,
+        )
 
     return network_coverages

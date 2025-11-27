@@ -48,7 +48,7 @@ A FastAPI service exposing 2G/3G/4G mobile network coverage for any address in F
    - Swagger UI: http://localhost:8034/api/docs
    - ReDoc: http://localhost:8034/api/redoc
 
-To see other tasks:
+To see other available commands:
 ```bash
 just
 ```

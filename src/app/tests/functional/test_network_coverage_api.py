@@ -5,7 +5,6 @@ import respx
 from httpx import AsyncClient, Response
 
 from app.core.config import CONFIG
-from app.models import ProviderModel
 from app.schemas.geo_coordinates import GeoPoint
 from app.tests.factories import create_provider_factory, create_site_factory
 
@@ -15,33 +14,27 @@ async def test_get_network_coverage_api_returns_availability_map(
     async_client: AsyncClient,
     mock_address: str,
     mock_adresse_api_response: dict[str, Any],
+    mock_list_of_nearby_geo_coordinates: list[GeoPoint],
 ):
-    target_coordinates = GeoPoint(latitude=48.8566, longitude=2.3522)
+    target_coordinates = mock_list_of_nearby_geo_coordinates[0]
 
-    orange_provider: ProviderModel = await create_provider_factory(
-        name="orange",
-    )
-    sfr_provider: ProviderModel = await create_provider_factory(
-        name="sfr",
-    )
+    expected_result = {
+        "orange": {"2G": True, "3G": False, "4G": False},
+        "sfr": {"2G": False, "3G": False, "4G": True},
+    }
 
-    await create_site_factory(
-        provider=orange_provider,
-        longitude=target_coordinates.longitude,
-        latitude=target_coordinates.latitude,
-        has_2g=True,
-        has_3g=False,
-        has_4g=False,
-    )
-
-    await create_site_factory(
-        provider=sfr_provider,
-        longitude=target_coordinates.longitude,
-        latitude=target_coordinates.latitude,
-        has_2g=False,
-        has_3g=False,
-        has_4g=True,
-    )
+    for provider_name, sites in expected_result.items():
+        created_provider_obj = await create_provider_factory(
+            name=provider_name,
+        )
+        await create_site_factory(
+            provider=created_provider_obj,
+            longitude=target_coordinates.longitude,
+            latitude=target_coordinates.latitude,
+            has_2g=sites["2G"],
+            has_3g=sites["3G"],
+            has_4g=sites["4G"],
+        )
 
     async with respx.mock:
         respx.get(
@@ -59,23 +52,18 @@ async def test_get_network_coverage_api_returns_availability_map(
         )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "orange": {"2G": False, "3G": False, "4G": False},
-        "sfr": {"2G": False, "3G": False, "4G": False},
-        "free": {"2G": False, "3G": False, "4G": False},
-        "bouygues": {"2G": False, "3G": False, "4G": False},
-    }
+    assert response.json() == expected_result
 
 
 @pytest.mark.asyncio
 async def test_get_network_coverage_api_returns_not_found(
     async_client: AsyncClient,
-    mock_address: str,
 ):
+    unknown_address = "123 Fake Street, London, UK"
     async with respx.mock:
         respx.get(
             CONFIG.adresse_api_url,
-            params={"q": mock_address, "limit": 1},
+            params={"q": unknown_address, "limit": 1},
         ).mock(
             return_value=Response(
                 status_code=200,
@@ -84,7 +72,7 @@ async def test_get_network_coverage_api_returns_not_found(
         )
         response = await async_client.get(
             f"{CONFIG.api.prefix}/v1/network-coverage",
-            params={"address": mock_address},
+            params={"address": unknown_address},
         )
 
     assert response.status_code == 404

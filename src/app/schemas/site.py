@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 from geoalchemy2.elements import WKTElement
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -28,3 +30,10 @@ class SiteCreate(BaseModel):
 
 class SiteUpdate(SiteCreate):
     pass
+
+
+class SiteCoverageRow(NamedTuple):
+    provider: str
+    g2: bool
+    g3: bool
+    g4: bool
