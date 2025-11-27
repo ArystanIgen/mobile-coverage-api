@@ -18,13 +18,10 @@ async def test_create_providers_if_not_exist_creates_defaults(
 ):
     provider_repo = ProviderRepository()
 
-    created_now = await create_providers_if_not_exist(async_session)
+    await create_providers_if_not_exist(async_session)
 
-    providers = await provider_repo.get_multi(
-        async_session=async_session
-    )
+    providers = await provider_repo.get_multi(async_session=async_session)
 
-    assert created_now is True
     assert len(providers) == len(OPERATOR_MAPPING)
 
 
@@ -36,13 +33,12 @@ async def test_create_providers_if_not_exist_skips_existing(
 
     await create_provider_factory()
 
-    created_now = await create_providers_if_not_exist(async_session)
+    await create_providers_if_not_exist(async_session)
 
     existing_providers = await provider_repo.get_multi(
         async_session=async_session
     )
 
-    assert created_now is False
     assert len(existing_providers) > 0
 
 

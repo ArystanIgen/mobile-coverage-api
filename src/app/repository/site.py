@@ -1,6 +1,7 @@
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import func
 
 from app.models import SiteModel
 from app.repository.base import BaseRepository
@@ -16,16 +17,24 @@ class SiteRepository(BaseRepository[SiteModel, SiteCreate, SiteUpdate]):
         *,
         longitude: float,
         latitude: float,
+        radius_m: int = 1000,
     ) -> list[SiteModel]:
+        # Build a PostGIS point from lat/lon (WGS84)
+        postgis_point = func.ST_SetSRID(
+            func.ST_MakePoint(longitude, latitude), 4326
+        )
+
         stmt = (
             select(self.model)
             .options(joinedload(self.model.provider))
+            # checks whether
+            # two geometries are within a certain distance of each other
+            # (in this case, it is 1000 m)
             .where(
-                and_(
-                    self.model.latitude >= latitude,
-                    self.model.latitude <= latitude,
-                    self.model.longitude >= longitude,
-                    self.model.longitude <= longitude,
+                func.ST_DWithin(
+                    self.model.location,
+                    postgis_point,
+                    radius_m,
                 )
             )
         )

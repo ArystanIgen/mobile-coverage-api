@@ -33,16 +33,13 @@ restart service:
 # ---------------
 
 # Run ruff check using uv
-ruff-check:
-    uv run ruff check --no-cache .
+ruff-check args='':
+    uv run ruff check --no-cache . {{ args }}
 
 # Run ruff format using uv
 ruff-format:
     uv run ruff format .
 
-# Fix auto-fixable issues with ruff
-ruff-fix:
-    uv run ruff check --fix .
 
 # Run mypy type checking
 mypy:

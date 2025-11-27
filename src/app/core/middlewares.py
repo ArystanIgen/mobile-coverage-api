@@ -18,8 +18,8 @@ async def validation_exception_handler(
     message = ""
     for err in exc.errors():
         message += (
-            f'Parameter: '
-            f'{".".join(map(str, err["loc"][1:]))}, Error: {err["msg"]};'
+            f"Parameter: "
+            f"{'.'.join(map(str, err['loc'][1:]))}, Error: {err['msg']};"
         )
     logger.error(
         "Validation error: {} -> {}",

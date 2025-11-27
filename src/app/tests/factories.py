@@ -2,6 +2,7 @@ from typing import Any, Awaitable, cast
 
 import factory
 from factory.alchemy import SQLAlchemyModelFactory
+from geoalchemy2.elements import WKTElement
 
 from app.models import ProviderModel, SiteModel
 
@@ -32,6 +33,12 @@ class SiteFactory(AsyncSessionFactory):
     provider = factory.SubFactory(ProviderFactory)
     longitude = factory.Faker("longitude")
     latitude = factory.Faker("latitude")
+    location = factory.LazyAttribute(
+        lambda obj: WKTElement(
+            f"POINT({obj.longitude} {obj.latitude})",
+            srid=4326,
+        )
+    )
     has_2g = factory.Faker("pybool")
     has_3g = factory.Faker("pybool")
     has_4g = factory.Faker("pybool")

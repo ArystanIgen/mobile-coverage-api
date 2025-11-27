@@ -91,3 +91,18 @@ async def test_get_network_coverage_api_returns_not_found(
 
     response_json = response.json()
     assert response_json["detail"] == "Address not found"
+
+
+@pytest.mark.asyncio
+async def test_get_network_coverage_api_fails_with_invalid_address(
+    async_client: AsyncClient,
+):
+    response = await async_client.get(
+        f"{CONFIG.api.prefix}/v1/network-coverage",
+        params={"address": "a"},
+    )
+
+    assert response.status_code == 400
+
+    response_json = response.json()
+    assert response_json["code"] == "InvalidRequest"

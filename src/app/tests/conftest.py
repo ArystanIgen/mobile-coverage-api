@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
@@ -31,6 +32,7 @@ async def test_engine():
         create_database(CONFIG.db.url)
 
     async with test_async_engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
         await conn.run_sync(BaseModel.metadata.create_all)
 
     yield test_async_engine

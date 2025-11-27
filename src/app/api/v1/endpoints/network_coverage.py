@@ -59,8 +59,8 @@ async def get_network_coverage_api(
 
         coverage = network_coverages[provider_name]
 
-        coverage.g2 = coverage.g2 or bool(site.has_2g)
-        coverage.g3 = coverage.g3 or bool(site.has_3g)
-        coverage.g4 = coverage.g4 or bool(site.has_4g)
+        coverage.g2 = coverage.g2 or site.has_2g
+        coverage.g3 = coverage.g3 or site.has_3g
+        coverage.g4 = coverage.g4 or site.has_4g
 
     return network_coverages

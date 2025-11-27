@@ -48,13 +48,14 @@ TRANSFORMER = pyproj.Transformer.from_crs(
 
 async def create_providers_if_not_exist(
     async_session: AsyncSession,
-) -> bool:
+):
     existing_providers = await provider_repo.get_multi(
         async_session=async_session,
     )
 
     if existing_providers:
-        return False
+        logger.info("Providers already exist. Skipping site seeding.")
+        return
 
     for mobile_network_code, name in OPERATOR_MAPPING.items():
         await provider_repo.create(
@@ -64,16 +65,22 @@ async def create_providers_if_not_exist(
                 name=name,
             ),
         )
-
-    return True
+    logger.info("Providers created")
 
 
 async def seed_sites_from_csv(
     async_session: AsyncSession,
     csv_file_path: str | None = None,
 ) -> None:
+    existing_sites = await site_repo.get_multi(async_session=async_session)
+    if existing_sites:
+        logger.info("Sites already exist. Skipping seeding.")
+        return
+
     target_csv = csv_file_path or CONFIG.sites_csv_file_path
+
     logger.info(f"Reading CSV from {target_csv}...")
+
     sites_batch = []
     processed_count = 0
     batch_size = 5000
@@ -97,9 +104,7 @@ async def seed_sites_from_csv(
 
             provider_id = provider_map.get(mobile_network_code)
             if provider_id and parsed_x and parsed_y:
-                longitude, latitude = TRANSFORMER.transform(
-                    parsed_x, parsed_y
-                )
+                longitude, latitude = TRANSFORMER.transform(parsed_x, parsed_y)
                 sites_batch.append(
                     SiteCreate(
                         provider_id=provider_id,
@@ -128,17 +133,8 @@ async def seed_sites_from_csv(
 
 async def seed_providers_and_sites() -> None:
     async with async_session_factory() as async_session:
-        providers_created_now = await create_providers_if_not_exist(
+        await create_providers_if_not_exist(
             async_session=async_session,
         )
 
-        if not providers_created_now:
-            logger.info(
-                "Providers already exist. Skipping site seeding."
-            )
-            return
-
-        logger.info(
-            "Providers created. Proceeding to seed sites..."
-        )
         await seed_sites_from_csv(async_session=async_session)
