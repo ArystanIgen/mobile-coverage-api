@@ -7,7 +7,7 @@ from geoalchemy2.elements import WKTElement
 from app.models import ProviderModel, SiteModel
 
 
-class AsyncSessionFactory(SQLAlchemyModelFactory):
+class AsyncSQLAlchemyModelFactory(SQLAlchemyModelFactory):
     @classmethod
     async def _create(cls, model_class, *args, **kwargs):
         instance = super()._create(model_class, *args, **kwargs)
@@ -16,7 +16,7 @@ class AsyncSessionFactory(SQLAlchemyModelFactory):
         return instance
 
 
-class ProviderFactory(AsyncSessionFactory):
+class ProviderFactory(AsyncSQLAlchemyModelFactory):
     class Meta:
         model = ProviderModel
 
@@ -26,7 +26,7 @@ class ProviderFactory(AsyncSessionFactory):
     )
 
 
-class SiteFactory(AsyncSessionFactory):
+class SiteFactory(AsyncSQLAlchemyModelFactory):
     class Meta:
         model = SiteModel
 

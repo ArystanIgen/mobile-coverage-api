@@ -80,9 +80,7 @@ async def seed_sites_from_csv(
 
     logger.info(f"Reading CSV from {target_csv}...")
 
-    sites_batch = []
-    processed_count = 0
-    batch_size = 5000
+    sites_to_create: list[SiteCreate] = []
 
     fetched_providers: list[ProviderModel] = await provider_repo.get_multi(
         async_session=async_session,
@@ -94,40 +92,32 @@ async def seed_sites_from_csv(
     }
 
     with open(target_csv, mode="r", encoding="utf-8") as f:
-        reader = csv.DictReader(f, delimiter=";")
+        sites_mobile_csv_reader = csv.DictReader(f, delimiter=";")
 
-        for row in reader:
-            mobile_network_code = row["Operateur"]
-            parsed_x = parse_float(row.get("x"))
-            parsed_y = parse_float(row.get("y"))
+        for site_row in sites_mobile_csv_reader:
+            mobile_network_code = site_row["Operateur"]
+            parsed_x = parse_float(site_row.get("x"))
+            parsed_y = parse_float(site_row.get("y"))
 
             provider_id = provider_map.get(mobile_network_code)
             if provider_id and parsed_x and parsed_y:
                 longitude, latitude = TRANSFORMER.transform(parsed_x, parsed_y)
-                sites_batch.append(
+                sites_to_create.append(
                     SiteCreate(
                         provider_id=provider_id,
                         latitude=latitude,
                         longitude=longitude,
-                        has_2g=row["2G"] == "1",
-                        has_3g=row["3G"] == "1",
-                        has_4g=row["4G"] == "1",
+                        has_2g=site_row["2G"] == "1",
+                        has_3g=site_row["3G"] == "1",
+                        has_4g=site_row["4G"] == "1",
                     )
                 )
-                if len(sites_batch) >= batch_size:
-                    await site_repo.create_bulk(
-                        async_session=async_session,
-                        objs_in=sites_batch,
-                    )
-                    processed_count += len(sites_batch)
-                    sites_batch = []
-        if sites_batch:
+        if sites_to_create:
             await site_repo.create_bulk(
                 async_session=async_session,
-                objs_in=sites_batch,
+                objs_in=sites_to_create,
             )
-            processed_count += len(sites_batch)
-        logger.info(f"Done! Added total of {processed_count} Sites.")
+        logger.info(f"Done! Added total of {len(sites_to_create)} Sites.")
 
 
 async def seed_providers_and_sites() -> None:

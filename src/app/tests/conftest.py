@@ -1,7 +1,6 @@
 import asyncio
 from asyncio import AbstractEventLoop
 from typing import AsyncGenerator, Generator
-from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
@@ -69,12 +68,11 @@ async def async_client(async_session: AsyncSession):
 
     main_app.dependency_overrides[get_async_session] = _get_db_override
 
-    with patch("app.main.seed_providers_and_sites", new_callable=AsyncMock):
-        transport = ASGITransport(app=main_app)
-        async with AsyncClient(
-            transport=transport,
-            base_url=CONFIG.api.host,
-        ) as client:
-            yield client
+    transport = ASGITransport(app=main_app)
+    async with AsyncClient(
+        transport=transport,
+        base_url=CONFIG.api.host,
+    ) as client:
+        yield client
 
     main_app.dependency_overrides.clear()

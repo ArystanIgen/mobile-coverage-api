@@ -48,23 +48,37 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             raise
 
     async def create_bulk(
-        self, async_session: AsyncSession, *, objs_in: list[CreateSchemaType]
+        self,
+        async_session: AsyncSession,
+        *,
+        objs_in: list[CreateSchemaType],
+        batch_size: int = 5000,
     ) -> list[ModelType]:
+        if not objs_in:
+            return []
+
         try:
-            objs_data = [
-                obj.model_dump(mode="python", exclude_none=True)
-                for obj in objs_in
-            ]
+            created_objs: list[ModelType] = []
 
-            db_objs = [self.model(**data) for data in objs_data]
+            for start in range(0, len(objs_in), batch_size):
+                batch = objs_in[start : start + batch_size]
 
-            async_session.add_all(db_objs)
-            await async_session.commit()
+                objs_data = [
+                    obj.model_dump(mode="python", exclude_none=True)
+                    for obj in batch
+                ]
 
-            for obj in db_objs:
-                await async_session.refresh(obj)
+                db_objs = [self.model(**data) for data in objs_data]
 
-            return db_objs
+                async_session.add_all(db_objs)
+                await async_session.commit()
+
+                for obj in db_objs:
+                    await async_session.refresh(obj)
+
+                created_objs.extend(db_objs)
+
+            return created_objs
 
         except Exception as e:
             logger.error(e)
