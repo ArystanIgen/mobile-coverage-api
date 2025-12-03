@@ -9,6 +9,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.core.config import CONFIG
+from app.exceptions import APIError
 
 
 async def validation_exception_handler(
@@ -29,6 +30,13 @@ async def validation_exception_handler(
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"code": "InvalidRequest", "message": message.strip()},
+    )
+
+
+async def api_error_handler(_: Request, error: APIError) -> JSONResponse:
+    return JSONResponse(
+        status_code=error.status_code,
+        content=error.payload,
     )
 
 

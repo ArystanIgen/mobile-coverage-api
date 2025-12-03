@@ -64,3 +64,7 @@ docker-lint:
 # Run pytest tests inside Docker
 test:
     docker-compose run --rm -e ENV=TEST fastapi
+
+# Migrate data from csv file
+csv-migrate:
+    docker-compose run --rm -e ENV=MIGRATE fastapi

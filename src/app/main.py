@@ -1,6 +1,4 @@
 import sys
-from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -13,10 +11,11 @@ from app.api.v1.endpoints.health import router as health_router
 from app.core.config import CONFIG
 from app.core.middlewares import (
     add_process_time_header,
+    api_error_handler,
     log_requests,
     validation_exception_handler,
 )
-from app.services.data_ingestion import seed_providers_and_sites
+from app.exceptions import APIError
 
 logger.remove()
 
@@ -40,17 +39,6 @@ logger.add(
     catch=True,
 )
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    try:
-        await seed_providers_and_sites()
-        yield
-    except Exception:
-        logger.exception("Startup failed during lifespan")
-        raise
-
-
 main_app = FastAPI(
     title=CONFIG.api.title,
     debug=CONFIG.api.debug,
@@ -58,7 +46,6 @@ main_app = FastAPI(
     openapi_url=f"{CONFIG.api.prefix}/openapi.json",
     docs_url=f"{CONFIG.api.prefix}/docs",
     redoc_url=f"{CONFIG.api.prefix}/redoc",
-    lifespan=lifespan,
 )
 
 main_app.add_middleware(
@@ -68,13 +55,14 @@ main_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+main_app.add_middleware(BaseHTTPMiddleware, dispatch=add_process_time_header)
+main_app.add_middleware(BaseHTTPMiddleware, dispatch=log_requests)
 
 main_app.add_exception_handler(
     RequestValidationError,
     validation_exception_handler,  # type:ignore
 )
-main_app.add_middleware(BaseHTTPMiddleware, dispatch=add_process_time_header)
-main_app.add_middleware(BaseHTTPMiddleware, dispatch=log_requests)
+main_app.add_exception_handler(APIError, api_error_handler)  # type:ignore
 
 main_app.include_router(router=api_router, prefix=CONFIG.api.prefix)
 main_app.include_router(

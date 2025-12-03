@@ -43,7 +43,11 @@ A FastAPI service exposing 2G/3G/4G mobile network coverage for any address in F
    ```bash
    just up-build
    ```
-5. Open the service:
+5. Migrate data from csv file to PostgreSQL:
+   ```bash
+   just csv-migrate
+   ``` 
+6. Open the service:
    - API base: http://localhost:8034
    - Swagger UI: http://localhost:8034/api/docs
    - ReDoc: http://localhost:8034/api/redoc
