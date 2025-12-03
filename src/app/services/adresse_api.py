@@ -1,10 +1,10 @@
 from typing import Mapping
 
 import httpx
-from fastapi import HTTPException
 from loguru import logger
 
 from app.core.config import CONFIG
+from app.exceptions import AddressNotFoundError
 from app.schemas.geo_coordinates import GeoPoint
 
 
@@ -22,10 +22,7 @@ async def fetch_coordinates_from_address(address: str) -> GeoPoint:
     features = data.get("features") or []
     if not features:
         logger.warning(f"Address not found: {address}")
-        raise HTTPException(
-            status_code=404,
-            detail="Address not found",
-        )
+        raise AddressNotFoundError()
 
     longitude, latitude = features[0]["geometry"]["coordinates"]
     return GeoPoint(

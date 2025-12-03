@@ -1,4 +1,4 @@
-from typing import Generic, Optional, Type, TypeVar
+from typing import Generic, Type, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel
@@ -34,7 +34,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def create(
         self, async_session: AsyncSession, *, obj_in: CreateSchemaType
-    ) -> Optional[ModelType]:  # noqa
+    ) -> ModelType | None:  # noqa
         try:
             obj_in_data = obj_in.model_dump(mode="python", exclude_none=True)
             db_obj = self.model(**obj_in_data)
@@ -61,7 +61,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             created_objs: list[ModelType] = []
 
             for start in range(0, len(objs_in), batch_size):
-                batch = objs_in[start : start + batch_size]
+                batch = objs_in[start: start + batch_size]
 
                 objs_data = [
                     obj.model_dump(mode="python", exclude_none=True)
@@ -91,7 +91,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *,
         instance: ModelType,
         obj_update: UpdateSchemaType,
-    ) -> Optional[ModelType]:
+    ) -> ModelType | None:
         update_data = obj_update.model_dump(
             mode="python", exclude_unset=True, exclude_none=True
         )
@@ -103,7 +103,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def remove(
         self, async_session: AsyncSession, *, id_: int
-    ) -> Optional[ModelType]:
+    ) -> ModelType | None:
         query = delete(self.model).where(self.model.id == id_)
         await async_session.execute(query)
         await async_session.commit()
