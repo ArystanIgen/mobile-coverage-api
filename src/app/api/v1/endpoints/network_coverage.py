@@ -4,6 +4,8 @@ from app.api.deps.repos import SiteRepoDep
 from app.api.deps.session import (
     AsyncSessionDep,
 )
+from app.exceptions import AddressNotFoundError, BadGatewayError
+from app.exceptions.openapi_handler import openapi_handle_error
 from app.schemas.geo_coordinates import GeoPoint
 from app.schemas.network_coverage import (
     NetworkAvailability,
@@ -11,8 +13,6 @@ from app.schemas.network_coverage import (
 )
 from app.schemas.site import SiteCoverageRow
 from app.services.adresse_api import fetch_coordinates_from_address
-from app.exceptions.openapi_handler import openapi_handle_error
-from app.exceptions import BadGatewayError, AddressNotFoundError
 
 router = APIRouter()
 
