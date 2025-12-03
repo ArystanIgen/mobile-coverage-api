@@ -2,10 +2,10 @@ from typing import Any, Never
 
 import pytest
 import respx
-from fastapi import HTTPException
 from httpx import Response
 
 from app.core.config import CONFIG
+from app.exceptions import AddressNotFoundError
 from app.services.adresse_api import fetch_coordinates_from_address
 
 
@@ -44,8 +44,8 @@ async def test_fetch_coordinates_not_found():
             )
         )
 
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AddressNotFoundError) as exc_info:
             await fetch_coordinates_from_address("Unknown Place")
 
         assert exc_info.value.status_code == 404
-        assert exc_info.value.detail == "Address not found"
+        assert exc_info.value.message == "Address not found"

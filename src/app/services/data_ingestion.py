@@ -1,3 +1,4 @@
+import asyncio
 import csv
 
 import pyproj
@@ -127,3 +128,8 @@ async def seed_providers_and_sites() -> None:
         )
 
         await seed_sites_from_csv(async_session=async_session)
+
+
+
+if __name__ == "__main__":
+    asyncio.run(seed_providers_and_sites())

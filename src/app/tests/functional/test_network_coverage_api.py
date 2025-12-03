@@ -78,7 +78,7 @@ async def test_get_network_coverage_api_returns_not_found(
     assert response.status_code == 404
 
     response_json = response.json()
-    assert response_json["detail"] == "Address not found"
+    assert response_json["message"] == "Address not found"
 
 
 @pytest.mark.asyncio

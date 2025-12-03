@@ -4,6 +4,8 @@ from app.api.deps.repos import SiteRepoDep
 from app.api.deps.session import (
     AsyncSessionDep,
 )
+from app.exceptions import AddressNotFoundError, BadGatewayError
+from app.exceptions.openapi_handler import openapi_handle_error
 from app.schemas.geo_coordinates import GeoPoint
 from app.schemas.network_coverage import (
     NetworkAvailability,
@@ -19,10 +21,15 @@ router = APIRouter()
     "",
     status_code=status.HTTP_200_OK,
     response_model=OperatorsAvailability,
-    summary="GetNetworkCoverage",
-    description="Get Network Coverage",
-    operation_id="GetNetworkCoverage",
-    response_description="Network Coverage",
+    responses=openapi_handle_error(
+        AddressNotFoundError,
+        BadGatewayError
+    ),
+    summary="Lookup mobile coverage for an address",
+    description="Returns 2G/3G/4G availability by "
+                "operator for the address provided. ",
+    operation_id="lookupNetworkCoverage",
+    response_description="Coverage map keyed by operator name",
 )
 async def get_network_coverage_api(
     async_session: AsyncSessionDep,
